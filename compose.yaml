@@ -1,0 +1,15 @@
+services:
+  product-service:
+    image: shopease-product-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      SQL_HOST: ${SQL_HOST:?Set SQL_HOST to the Azure SQL server hostname}
+      SQL_DATABASE: ${SQL_DATABASE:?Set SQL_DATABASE to the ShopEase database}
+      SQL_AUTHENTICATION: ${SQL_AUTHENTICATION:-SqlPassword}
+      SQL_USER: ${SQL_USER:-}
+      SQL_PASSWORD: ${SQL_PASSWORD:-}
+    restart: unless-stopped
