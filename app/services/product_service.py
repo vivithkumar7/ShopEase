@@ -4,7 +4,6 @@ from app.models.product_model import Product
 from app.repositories.product_repository import (
     InMemoryProductRepository,
     ProductRepository,
-    SqlProductRepository,
 )
 
 
@@ -72,4 +71,4 @@ class ProductService:
         return self._repository.delete_product(product_id)
 
 
-product_service = ProductService(SqlProductRepository())
+product_service = ProductService()

@@ -1,0 +1,131 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>ShopEase Docker verification</title><style>body{margin:0;background:#111827;color:#e5edf5;font:15px/1.45 Consolas,monospace}.top{background:#263449;padding:18px 28px;font:20px Segoe UI,Arial}.wrap{padding:18px 28px}.section{margin:0 0 18px;border:1px solid #405065;border-radius:8px;overflow:hidden}.section h2{margin:0;padding:10px 16px;background:#1f3045;color:#8be9fd;font:16px Segoe UI,Arial}.section pre{margin:0;padding:14px 16px;white-space:pre-wrap;overflow-wrap:anywhere}</style><div class="top">ShopEase Product Service - Docker verification - 2026-11-03T18:57:45.131077+05:30</div><div class="wrap"><section class="section"><h2>Docker Compose status</h2><pre>NAME                                         IMAGE                      COMMAND                                             SERVICE           CREATED         STATUS         PORTS
+
+shopease-product-service-product-service-1   shopease-product-service   &quot;uvicorn app.main:app --host 0.0.0.0 --port 8003&quot;   product-service   6 minutes ago   Up 6 minutes   0.0.0.0:8003-&gt;8003/tcp, [::]:8003-&gt;8003/tcp
+
+</pre></section><section class="section"><h2>Docker-hosted HTTP smoke test</h2><pre>PASS GET / -&gt; HTTP 200
+
+PASS POST /api/products/ -&gt; HTTP 422
+
+PASS POST /api/products/ -&gt; HTTP 422
+
+PASS POST /api/products/ -&gt; HTTP 422
+
+PASS POST /api/products/ -&gt; HTTP 422
+
+PASS POST /api/products/ -&gt; HTTP 422
+
+PASS POST /api/products/ -&gt; HTTP 422
+
+PASS POST /api/products/ -&gt; HTTP 201
+
+PASS GET /api/products/3 -&gt; HTTP 200
+
+PASS GET /api/products/?category=smoke%20test -&gt; HTTP 200
+
+PASS GET /api/products/?skip=0&amp;limit=1 -&gt; HTTP 200
+
+PASS PUT /api/products/3 -&gt; HTTP 200
+
+PASS GET /api/products/not-an-id -&gt; HTTP 422
+
+PASS GET /api/products/0 -&gt; HTTP 422
+
+PASS GET /api/products/9223372036854775807 -&gt; HTTP 404
+
+PASS DELETE /api/products/3 -&gt; HTTP 204
+
+PASS GET /api/products/3 -&gt; HTTP 404
+
+All product API smoke tests passed against http://localhost:8003
+
+</pre></section><section class="section"><h2>In-memory restart behavior</h2><pre>In-memory restart behavior check - 2026-11-03T18:34:41.452267+05:30
+
+POST created product ID 2: HTTP 201
+
+Docker Compose restarted the product-service container.
+
+GET /api/products/2 after restart: HTTP 404
+
+PASS: process-local in-memory data was cleared when the app restarted.
+
+</pre></section><section class="section"><h2>Uvicorn access logs</h2><pre>product-service-1  | INFO:     Started server process [1]
+
+product-service-1  | INFO:     Waiting for application startup.
+
+product-service-1  | INFO:     Application startup complete.
+
+product-service-1  | INFO:     Uvicorn running on http://0.0.0.0:8003 (Press CTRL+C to quit)
+
+product-service-1  | INFO:     172.19.0.1:40864 - &quot;GET / HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:44998 - &quot;GET / HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:45012 - &quot;GET / HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:45014 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45018 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45032 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45042 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45056 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45058 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45062 - &quot;POST /api/products/ HTTP/1.1&quot; 201 Created
+
+product-service-1  | INFO:     172.19.0.1:45064 - &quot;GET /api/products/1 HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:45074 - &quot;GET /api/products/?category=smoke%20test HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:45084 - &quot;GET /api/products/?skip=0&amp;limit=1 HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:45092 - &quot;PUT /api/products/1 HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:45098 - &quot;GET /api/products/not-an-id HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45106 - &quot;GET /api/products/0 HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:45110 - &quot;GET /api/products/9223372036854775807 HTTP/1.1&quot; 404 Not Found
+
+product-service-1  | INFO:     172.19.0.1:45116 - &quot;DELETE /api/products/1 HTTP/1.1&quot; 204 No Content
+
+product-service-1  | INFO:     172.19.0.1:45132 - &quot;GET /api/products/1 HTTP/1.1&quot; 404 Not Found
+
+product-service-1  | INFO:     172.19.0.1:54568 - &quot;GET / HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:54580 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:54594 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:54608 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:54620 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:54626 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:54636 - &quot;POST /api/products/ HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:54642 - &quot;POST /api/products/ HTTP/1.1&quot; 201 Created
+
+product-service-1  | INFO:     172.19.0.1:54656 - &quot;GET /api/products/2 HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:54664 - &quot;GET /api/products/?category=smoke%20test HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:35500 - &quot;GET /api/products/?skip=0&amp;limit=1 HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:35516 - &quot;PUT /api/products/2 HTTP/1.1&quot; 200 OK
+
+product-service-1  | INFO:     172.19.0.1:35532 - &quot;GET /api/products/not-an-id HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:35546 - &quot;GET /api/products/0 HTTP/1.1&quot; 422 Unprocessable Entity
+
+product-service-1  | INFO:     172.19.0.1:35558 - &quot;GET /api/products/9223372036854775807 HTTP/1.1&quot; 404 Not Found
+
+product-service-1  | INFO:     172.19.0.1:35568 - &quot;DELETE /api/products/2 HTTP/1.1&quot; 204 No Content
+
+product-service-1  | INFO:     172.19.0.1:35578 - &quot;GET /api/products/2 HTTP/1.1&quot; 404 Not Found
+
+</pre></section></div></html>\n

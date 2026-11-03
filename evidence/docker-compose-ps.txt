@@ -1,0 +1,2 @@
+﻿NAME                                         IMAGE                      COMMAND                                             SERVICE           CREATED         STATUS         PORTS
+shopease-product-service-product-service-1   shopease-product-service   "uvicorn app.main:app --host 0.0.0.0 --port 8003"   product-service   6 minutes ago   Up 6 minutes   0.0.0.0:8003->8003/tcp, [::]:8003->8003/tcp

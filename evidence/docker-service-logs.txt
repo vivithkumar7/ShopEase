@@ -1,0 +1,40 @@
+﻿product-service-1  | INFO:     Started server process [1]
+product-service-1  | INFO:     Waiting for application startup.
+product-service-1  | INFO:     Application startup complete.
+product-service-1  | INFO:     Uvicorn running on http://0.0.0.0:8003 (Press CTRL+C to quit)
+product-service-1  | INFO:     172.19.0.1:40864 - "GET / HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:44998 - "GET / HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:45012 - "GET / HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:45014 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45018 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45032 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45042 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45056 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45058 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45062 - "POST /api/products/ HTTP/1.1" 201 Created
+product-service-1  | INFO:     172.19.0.1:45064 - "GET /api/products/1 HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:45074 - "GET /api/products/?category=smoke%20test HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:45084 - "GET /api/products/?skip=0&limit=1 HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:45092 - "PUT /api/products/1 HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:45098 - "GET /api/products/not-an-id HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45106 - "GET /api/products/0 HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:45110 - "GET /api/products/9223372036854775807 HTTP/1.1" 404 Not Found
+product-service-1  | INFO:     172.19.0.1:45116 - "DELETE /api/products/1 HTTP/1.1" 204 No Content
+product-service-1  | INFO:     172.19.0.1:45132 - "GET /api/products/1 HTTP/1.1" 404 Not Found
+product-service-1  | INFO:     172.19.0.1:54568 - "GET / HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:54580 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:54594 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:54608 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:54620 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:54626 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:54636 - "POST /api/products/ HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:54642 - "POST /api/products/ HTTP/1.1" 201 Created
+product-service-1  | INFO:     172.19.0.1:54656 - "GET /api/products/2 HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:54664 - "GET /api/products/?category=smoke%20test HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:35500 - "GET /api/products/?skip=0&limit=1 HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:35516 - "PUT /api/products/2 HTTP/1.1" 200 OK
+product-service-1  | INFO:     172.19.0.1:35532 - "GET /api/products/not-an-id HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:35546 - "GET /api/products/0 HTTP/1.1" 422 Unprocessable Entity
+product-service-1  | INFO:     172.19.0.1:35558 - "GET /api/products/9223372036854775807 HTTP/1.1" 404 Not Found
+product-service-1  | INFO:     172.19.0.1:35568 - "DELETE /api/products/2 HTTP/1.1" 204 No Content
+product-service-1  | INFO:     172.19.0.1:35578 - "GET /api/products/2 HTTP/1.1" 404 Not Found

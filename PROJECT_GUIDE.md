@@ -1,415 +1,212 @@
-# Product Service: Step-by-Step Guide
+# ShopEase Product Service — Implementation Guide
 
-This guide explains the project files, request flow, validation, persistence,
-migrations, Docker setup, and API testing. Product data is stored in Azure SQL
-Database and survives application/container restarts.
+## 1. Assignment scope
 
-## 1. Project structure
+This project is a practical FastAPI product catalog with five working CRUD
+endpoints. It uses Python in-memory storage and runs in Docker. **It does not
+use MySQL, Azure SQL, or any database.** Products exist only while the
+application process is running; restarting the container clears them.
+
+## 2. Project structure
 
 ```text
-shopease-product-service/
-|-- app/
-|   |-- main.py
-|   |-- config/
-|   |   |-- __init__.py
-|   |   `-- settings.py
-|   |-- db/
-|   |   |-- connection.py
-|   |   `-- migrations/
-|   |       `-- versions/
-|   |           `-- v001_products.py
-|   |-- models/
-|   |   |-- __init__.py
-|   |   `-- product_model.py
-|   |-- routers/
-|   |   |-- __init__.py
-|   |   `-- product_routes.py
-|   |-- schemas/
-|   |   |-- __init__.py
-|   |   `-- product_schema.py
-|   |-- repositories/
-|   |   `-- product_repository.py
-|   `-- services/
-|       |-- __init__.py
-|       `-- product_service.py
-|-- scripts/
-|   `-- smoke_test.py
-|-- tests/
-|   |-- test_database_safety.py
-|   `-- test_product_api.py
-|-- .dockerignore
-|-- .env.example
-|-- .env
-|-- .gitignore
-|-- compose.yaml
-|-- Dockerfile
-|-- README.md
-|-- PROJECT_GUIDE.md
-|-- requirements-dev.txt
-|-- requirements.txt
+app/
+  main.py                         creates the FastAPI application
+  config/settings.py              app name/version settings
+  models/product_model.py          Product data class
+  schemas/product_schema.py        validated API input/output
+  repositories/product_repository.py
+                                  repository protocol and in-memory storage
+  services/product_service.py       product business operations
+  routers/product_routes.py         HTTP endpoint definitions
+scripts/smoke_test.py               tests the live Docker-hosted API
+tests/test_product_api.py           automated API behavior tests
+Dockerfile                          builds the application image
+compose.yaml                        starts the service on port 8003
+requirements.txt                    runtime dependencies
+requirements-dev.txt                test dependencies
 ```
 
-The `__init__.py` files mark component folders as Python packages. `main.py`
-assembles the application; routers define HTTP endpoints; schemas validate
-input/output; models represent products; repositories access SQL; services
-coordinate catalog operations; migrations manage schema changes; and settings
-load environment configuration.
+## 3. Application startup and request flow
 
-## 2. How a request moves through the application
+`app/main.py` creates the FastAPI app, registers the product router, and
+provides a root health route. Uvicorn runs this app inside the container.
 
-1. Uvicorn listens for HTTP traffic and serves the FastAPI `app` object.
-2. FastAPI matches the URL and method to a registered route.
-3. FastAPI and Pydantic validate request parameters and JSON bodies against
-   the declared types and schemas.
-4. The route calls `product_service` with validated values.
-5. The service calls the SQL repository, which opens a database connection
-   and executes parameterized statements against `[shopease].[products]`.
-6. FastAPI converts the returned product to the response schema and JSON.
-7. FastAPI returns the endpoint's declared status code.
+For a product request:
 
-## 3. Source walkthrough
+1. Uvicorn receives HTTP traffic.
+2. FastAPI matches the HTTP method and URL to a route.
+3. Pydantic validates the path, query, or JSON body.
+4. The route calls `ProductService`.
+5. The service calls the in-memory `ProductRepository`.
+6. FastAPI serializes the result as JSON and returns the route's status code.
 
-### `app/main.py`
+The route layer does not store data itself. The service layer does not parse
+HTTP. The repository owns the product collection.
 
-- `import logging` provides the application logger.
-- `FastAPI`, `Request`, and `JSONResponse` are used to create the app and
-  implement a consistent response for unexpected server errors.
-- The settings and product router imports connect configuration and API
-  endpoints to the application.
-- `logger = logging.getLogger(__name__)` creates a module-specific logger.
-- `app = FastAPI(...)` creates the app. Its title and version come from
-  settings; the description appears in generated API documentation.
-- `app.include_router(product_router)` registers all product endpoints.
-- `@app.exception_handler(Exception)` registers a handler for otherwise
-  unhandled exceptions. The handler logs request method/path and exception
-  details on the server, but returns only a generic message to the client.
-- `@app.get("/", tags=["health"])` adds a small root/health endpoint. Its
-  function returns a JSON welcome message.
+## 4. Product model and validation
 
-### `app/config/settings.py`
+`app/models/product_model.py` defines a product with:
 
-- `Path` locates the project-level `.env` file regardless of the current
-  working directory.
-- `BaseSettings` and `SettingsConfigDict` come from Pydantic Settings.
-- `Settings` defines the application name and version defaults.
-- `model_config` tells Pydantic Settings to load UTF-8 values from `.env` and
-  ignore unrelated environment variables.
-- `settings = Settings()` creates the shared settings instance at import time.
-  Environment variables can override the default values.
+- `id`: generated integer ID
+- `name`: required product name
+- `description`: optional text
+- `price`: positive number with at most four decimal places
+- `stock_quantity`: non-negative integer
+- `category`: required category name
+- `status`: `Active` or `Inactive`
+- `created_at`: UTC creation timestamp
 
-### `app/models/product_model.py`
+`app/schemas/product_schema.py` defines `ProductCreate`, `ProductUpdate`, and
+`ProductResponse`. Input schemas reject blank names/categories, invalid
+prices, negative stock, unsupported statuses, missing fields, and unexpected
+extra fields. A PUT is a full replacement of editable product fields, not a
+partial PATCH.
 
-- `dataclass` generates a convenient initializer for the product record.
-- `datetime` represents the creation timestamp.
-- `Literal` restricts the model's status type to the two supported values.
-- `Product` holds an ID, name, optional description, price, stock quantity,
-  category, status, and creation timestamp. It is the service data object
-  corresponding to `[shopease].[products]`.
+## 5. Repository and business logic
 
-### `app/schemas/product_schema.py`
+`app/repositories/product_repository.py` defines the operations expected by
+the service and implements them with `InMemoryProductRepository`. A
+threading lock protects reads and writes to the shared dictionary. The
+repository assigns IDs, filters categories without case sensitivity,
+applies pagination, preserves `created_at` when updating, and reports whether
+an item was deleted.
 
-- `BaseModel`, `Field`, and `ConfigDict` define Pydantic schemas and field
-  constraints; `field_validator` adds custom text validation.
-- `ProductCreate` is the input schema used for new products.
-- `extra="forbid"` rejects unexpected keys instead of silently accepting them.
-- `name` and `category` must be strings of 1–100 characters.
-- `description` is optional and may contain at most 1000 characters.
-- `price` must be a strict numeric value greater than zero, below
-  `1000000000000000`, and have no more than four decimal places; these limits
-  match the persisted `DECIMAL(19,4)` range and avoid silent rounding.
-  Infinity and NaN are rejected.
-- `stock_quantity` must be a strict integer greater than or equal to zero.
-- `status` accepts only `"Active"` or `"Inactive"`.
-- `value_must_not_be_blank` trims leading/trailing whitespace and rejects
-  empty or whitespace-only name/category values. A missing description remains
-  `None`; if supplied, a whitespace-only description is rejected.
-- `ProductUpdate` reuses the create schema, so `PUT` requires the full product
-  representation rather than a partial patch.
-- `ProductResponse` defines the public output fields. `from_attributes=True`
-  lets Pydantic create a response from the `Product` dataclass.
+`app/services/product_service.py` delegates create, list, get, update, and
+delete operations through the repository protocol. The application singleton
+uses the default in-memory repository. Tests can create a new service to get
+an isolated product collection.
 
-### `app/services/product_service.py`
+## 6. Five REST endpoints
 
-- `ProductService` delegates create, list, get, update, and delete operations
-  through the `ProductRepository` protocol.
-- `InMemoryProductRepository` is used when tests create `ProductService()`;
-  this keeps API unit tests isolated from a live database.
-- The application singleton injects `SqlProductRepository`, so live API
-  requests use the database-backed store.
+All product routes use `/api/products/`.
 
-### `app/repositories/product_repository.py`
+| Method | Path | Behavior | Success |
+|---|---|---|---|
+| POST | `/api/products/` | Create from a JSON body | 201 Created |
+| GET | `/api/products/` | List; optional category/skip/limit | 200 OK |
+| GET | `/api/products/{product_id}` | Get one product | 200 OK |
+| PUT | `/api/products/{product_id}` | Replace editable fields | 200 OK |
+| DELETE | `/api/products/{product_id}` | Delete one product | 204 No Content |
 
-- `ProductRepository` specifies the operations the service needs, without
-  coupling it to a particular storage implementation.
-- `SqlProductRepository` binds all values as parameters; user text and IDs are
-  never interpolated into SQL.
-- `list_products` applies category filtering, stable ID ordering, and SQL
-  Server `OFFSET/FETCH` pagination in the database.
-- `create_product` relies on the database identity and UTC timestamp default,
-  then reads the inserted row in the same connection/transaction.
-- `update_product` replaces editable columns without changing the product ID
-  or creation timestamp.
-- `delete_product` returns whether the database deleted a row.
-- Reads and writes close their cursor and connection; writes commit only after
-  the SQL statement and returned row/count have been validated.
-
-### `app/db/connection.py`
-
-- Connection details are loaded from `SQL_HOST`, `SQL_DATABASE`,
-  `SQL_AUTHENTICATION`, `SQL_USER`, and `SQL_PASSWORD`.
-- It rejects missing targets and `master`, escapes ODBC values, keeps Azure
-  TLS certificate validation enabled, and never logs credentials.
-- New database connections retry only documented transient connection errors
-  with bounded exponential delay. Query and transaction failures are surfaced
-  rather than replayed on an uncertain connection.
-- Microsoft driver's process-local connection pool is configured once, before
-  the first connection, with a maximum of 25 connections and a five-minute
-  idle timeout; account for this per worker/replica.
-- Microsoft `mssql-python` bundles its own ODBC driver; the Docker image does
-  not need an OS-level ODBC driver installation.
-
-### `app/db/migrate.py` and `app/db/migrations/versions/`
-
-- `v001_products.py` is the first ordered, forward-only migration. It creates
-  the product table with bounded Unicode fields, a decimal price, UTC creation
-  timestamp, primary key, validated checks, and category index.
-- The schema, migration history, and migration lock table are all under
-  `[shopease]`; migration state is not placed in `dbo`.
-- The command requires `--database`, and it must equal `SQL_DATABASE`. Before
-  DDL it verifies `DB_NAME()` and `SERVERPROPERTY('EngineEdition') = 5`.
-- A database-scoped, transaction-owned application lock serializes runners;
-  `[shopease].[__migration_lock]` also holds a row lock inside the same
-  transaction.
-- All migrations, schema checks, and history rows are one transaction. Each
-  migration is checksum-verified and its postcondition is checked before its
-  history record is inserted. Exceptions roll back and propagate; app startup
-  never runs migrations.
-- On every run, applied checksums are verified and the latest migration's
-  postcondition is re-checked against the live schema. Changed migration files,
-  missing versions, a wrong database, or failed postconditions stop the
-  command with a non-zero exit.
-
-### `app/routers/product_routes.py`
-
-- `APIRouter` groups related endpoints under the `/api/products` prefix.
-- `create_product` accepts a validated `ProductCreate`, sends its fields to
-  the service, and returns a `ProductResponse` with HTTP `201`.
-- `list_products` accepts optional category filtering and bounded pagination
-  (`skip >= 0`, `1 <= limit <= 500`) and returns a list.
-- `get_product` requires a positive integer ID. It returns the product or
-  raises HTTP `404` when that ID is absent.
-- `update_product` accepts a complete validated `ProductUpdate`, replaces the
-  product, and returns `404` if no product has that ID.
-- `delete_product` returns an empty HTTP `204` response after a successful
-  removal and HTTP `404` for an unknown ID.
-- FastAPI automatically returns HTTP `422` for invalid request data, including
-  malformed/non-positive IDs and invalid JSON fields.
-
-### Dependencies and container files
-
-- `requirements.txt` lists FastAPI, Pydantic Settings, and Uvicorn with
-  compatible version ranges plus Microsoft's `mssql-python` driver.
-  `pip install -r requirements.txt` installs them into the active virtual
-  environment or Docker image.
-- `Dockerfile` starts from the small Python 3.12 image, sets `/service` as
-  the working directory, copies and installs requirements before copying app
-  source (so Docker can reuse the dependency layer), documents port 8003,
-  and runs Uvicorn on `0.0.0.0:8003` so the container port can be published.
-- `.dockerignore` keeps local environment files, secret-like files, virtual
-  environments, caches, Git data, and temporary files out of the Docker build
-  context. The image only needs the dependencies and `app` package.
-- `.gitignore` excludes local `.env`, Python environments, bytecode, and test
-  caches from Git.
-- `compose.yaml` defines the Compose service, requires a target host/database,
-  passes authentication from environment variables, publishes port 8003, and
-  restarts the container unless it is stopped.
-
-### `scripts/smoke_test.py`
-
-- The imports use only Python's standard library: `argparse` parses the
-  service URL, `json` handles request/response bodies, and `urllib` sends HTTP
-  requests without adding a test dependency.
-- `send_request` builds the URL and JSON request, captures both successful and
-  HTTP error responses, and raises a clear error if the service cannot be
-  reached.
-- `expect_status` stops the test with a useful message when a response has an
-  unexpected HTTP status.
-- `run_smoke_tests` first checks the health route, then confirms invalid
-  inputs are rejected, creates a product, tests read/filter/pagination/update,
-  checks invalid and missing IDs, and finally deletes the created item and
-  confirms it can no longer be fetched.
-- `main` accepts `--base-url`, defaulting to Docker's local published port.
-  The `if __name__ == "__main__"` guard lets the file be run as a script
-  without running tests merely by importing it.
-
-### `tests/test_product_api.py`
-
-- The `client` fixture gives each test a fresh `ProductService`, preventing
-  products from leaking between tests, and wraps the FastAPI app in its test
-  client.
-- The `product_payload` fixture provides a valid example product.
-- The tests exercise health, successful create/read/update/delete operations,
-  category filtering, pagination, missing fields, extra fields, invalid
-  values and IDs, not-found responses, and preservation of `created_at`.
-- `pytest.mark.parametrize` runs the same validation/ID checks against several
-  invalid inputs.
-- These are in-process API tests and do not require a running Uvicorn or Docker
-  container. Use `scripts/smoke_test.py` to test an independently running app.
-
-## 4. Set up and run locally
-
-Run these commands from the project directory in PowerShell. Install Python
-3.11 or newer first:
-
-```powershell
-py --version
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m pip check
-Copy-Item .env.example .env
-# Edit .env with your Azure SQL target and authentication details.
-python -m app.db.migrate --database ShopEase
-uvicorn app.main:app --reload --port 8000
-```
-
-For SQL authentication, fill in `SQL_HOST`, `SQL_DATABASE`,
-`SQL_AUTHENTICATION=SqlPassword`, `SQL_USER`, and `SQL_PASSWORD` in the
-untracked `.env`. For a local developer authenticated with Azure CLI, set
-`SQL_AUTHENTICATION=ActiveDirectoryDefault` and omit SQL username/password.
-Use the actual configured application database name in the migration command.
-The runner refuses `master`, checks the live database name and Azure SQL engine
-edition, and never runs on API startup.
-
-For the automated API test suite, install its development dependencies and
-run pytest:
-
-```powershell
-python -m pip install -r requirements-dev.txt
-python -m pytest -q
-```
-
-Open <http://127.0.0.1:8000/docs> for Swagger UI. Open a second PowerShell
-window in the project directory to run the smoke test against the local
-server:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\smoke_test.py --base-url http://127.0.0.1:8000
-```
-
-## 5. Build and run with Docker
-
-Make sure Docker Desktop is running with its Linux container engine. Copy
-`.env.example` to `.env` only if no `.env` exists, configure the database
-connection without overwriting existing secrets, then from the project
-directory:
-
-```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-docker build -t shopease-product-service .
-docker image ls shopease-product-service
-docker run --rm --env-file .env shopease-product-service python -m app.db.migrate --database ShopEase
-docker run -d --name shopease-product-container --env-file .env -p 8003:8003 shopease-product-service
-docker ps
-docker logs shopease-product-container
-```
-
-The migration command must finish successfully before starting the API
-container. It runs only against the database named by both `SQL_DATABASE` and
-`--database`.
-
-The `-p 8003:8003` option maps host port 8003 to container port 8003. Visit
-<http://localhost:8003/docs> to use the container-hosted Swagger UI. Verify
-the API against the running container with:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\smoke_test.py --base-url http://localhost:8003
-```
-
-The smoke test checks successful creation, retrieval, update, and deletion;
-case-insensitive category filtering; pagination; invalid payloads; invalid
-IDs; and missing/deleted products. It uses only Python's standard library and
-does not add project dependencies.
-
-To operate the container:
-
-```powershell
-docker stop shopease-product-container
-docker start shopease-product-container
-docker rm -f shopease-product-container
-```
-
-To use Docker Compose instead, run `docker compose build`,
-`docker compose run --rm product-service python -m app.db.migrate --database ShopEase`,
-`docker compose up -d`, `docker compose ps`, `docker compose logs`, and
-`docker compose down`. Do not run the standalone and Compose versions
-simultaneously unless you change the container name or host port.
-
-## 6. Test with Swagger UI or Postman
-
-For Postman, use `http://localhost:8003` as the base URL when testing Docker.
-For local Uvicorn, use `http://127.0.0.1:8000`. For `POST` and `PUT`, select
-**Body > raw > JSON** and send:
+A valid product JSON body is:
 
 ```json
 {
   "name": "Headphones",
   "description": "Wireless headphones",
-  "price": 2500,
+  "price": 25.5,
   "stock_quantity": 20,
   "category": "Accessories",
   "status": "Active"
 }
 ```
 
-Suggested test order:
+Invalid bodies and non-positive or malformed IDs return 422. A valid but
+unknown ID returns 404. Unexpected server errors are logged and return a
+generic 500 response.
 
-1. `POST /api/products/` with the valid body. Expect `201`; note the returned
-   `id`.
-2. Repeat the POST with `"name": "   "`, `"price": -1`, and
-   `"stock_quantity": -1`. Each request should return `422`.
-3. `GET /api/products/`; expect a JSON list.
-4. `GET /api/products/?category=accessories&skip=0&limit=10`; category
-   filtering is case-insensitive.
-5. `GET /api/products/{id}` using the returned ID; expect `200`.
-6. `GET /api/products/999999` or a non-integer ID; expect `404` for a valid
-   but unknown integer and `422` for a malformed ID.
-7. `PUT /api/products/{id}` with the complete valid body; expect `200`.
-8. `DELETE /api/products/{id}`; expect `204` and an empty response body.
-9. `GET /api/products/{id}` again; expect `404`.
+## 7. Build and run with Docker
 
-## 7. Git and GitHub
-
-The project directory can be initialized as a Git repository and published to
-a GitHub repository named `shopease-product-service`. First create an empty
-repository on GitHub, then use:
+Start Docker Desktop and open PowerShell in the project directory:
 
 ```powershell
-git init
-git add .
-git commit -m "Build ShopEase product service"
-git branch -M main
-git remote add origin https://github.com/<your-user>/shopease-product-service.git
-git push -u origin main
+docker compose up -d --build
+docker compose ps
+docker compose logs --tail 30 product-service
 ```
 
-Replace `<your-user>` with your GitHub username. `.gitignore` excludes `.env`
-and Python environments; `.dockerignore` excludes local configuration,
-secrets, caches, and Git metadata from Docker build context. Never commit
-credentials. GitHub authentication may require the GitHub CLI, a browser
-sign-in, or a personal access token configured through Git Credential Manager;
-do not put a token in the remote URL.
+The Compose file builds the local Dockerfile, publishes host port 8003 to
+container port 8003, and starts Uvicorn on `0.0.0.0:8003`. No database
+environment variables or database container are required.
 
-## 8. Screenshots and submission evidence
+Open <http://localhost:8003/docs> for Swagger UI. The service root is
+<http://localhost:8003/>.
 
-After running the Docker commands, capture your own screenshots of:
+To stop the container:
 
-- `docker ps` showing the running product-service container.
-- Swagger UI at `http://localhost:8003/docs`.
-- Successful create/read/update/delete requests and validation errors.
-- `docker logs shopease-product-container`.
-- The GitHub repository page after the push completes.
+```powershell
+docker compose down
+```
 
-Screenshots, a published GitHub repository, and a running Docker container
-must be produced from your own Docker/GitHub environment; they are not
-generated by this source project.
+## 8. Required Docker-hosted CRUD test
+
+The pytest API tests run in-process, so they are not the only evidence. Run
+the smoke script from the host against the published Docker port:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\smoke_test.py --base-url http://localhost:8003
+```
+
+The script sends HTTP requests to the running container. It tests:
+
+1. Health response.
+2. Rejection of invalid product bodies.
+3. POST create and generated ID.
+4. GET one product.
+5. GET list, case-insensitive category filter, and pagination.
+6. PUT update and preservation of the creation timestamp.
+7. Malformed, non-positive, and unknown IDs.
+8. DELETE and confirmation that the product is gone.
+
+Each successful assertion prints a `PASS` line with the method, path, and
+status code. A failed connection, unexpected response, or failed assertion
+raises an error and exits non-zero.
+
+An equivalent curl check for the health route is:
+
+```powershell
+curl.exe -i http://localhost:8003/
+```
+
+Use Swagger or Postman for manual checks. In Postman set the base URL to
+`http://localhost:8003`, choose raw JSON for POST/PUT, and use the ID returned
+by POST in subsequent requests.
+
+## 9. Automated tests and expected behavior
+
+Install development dependencies and run:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+The test suite checks health, all CRUD operations, validation, filtering,
+pagination, not-found behavior, and timestamps. The Docker smoke test
+independently checks the live HTTP application. To inspect Docker logs:
+
+```powershell
+docker compose logs --tail 50 product-service
+```
+
+An empty list is a valid response when no products have been created.
+Products are intentionally temporary and disappear when the container is
+recreated or the Python process restarts.
+
+## 10. Team walkthrough and GitHub submission
+
+Each team member should be able to explain, without only reading this guide:
+
+- How `ProductCreate` validates a POST request.
+- How `product_routes.py` delegates to `ProductService`.
+- How the repository assigns IDs and stores products.
+- Why a deleted or unknown ID returns 404.
+- How the smoke script tests the Docker-hosted API over HTTP.
+- Why restarting this in-memory service clears its catalog.
+
+Recommended group exercise: one member starts Docker, another creates and
+updates a product with Swagger, and another explains the repository and
+verifies the delete with a GET.
+
+For GitHub, include source, tests, Docker files, documentation, the report,
+and sanitized evidence. The `evidence/` folder contains the actual Swagger
+screenshot, Docker-hosted HTTP smoke-test output, container status, and access
+logs. Never add `.env`, passwords, GitHub tokens, `.venv`, or caches.
+
+```powershell
+git status
+git add README.md PROJECT_GUIDE.md app scripts tests Dockerfile compose.yaml requirements.txt requirements-dev.txt evidence reports
+git commit -m "Complete in-memory Docker product CRUD"
+git push
+```

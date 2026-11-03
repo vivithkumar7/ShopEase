@@ -21,5 +21,5 @@
   <text x="258" y="486" fill="#e7edf4" font-family="Consolas, monospace" font-size="25">:</text>
   <text x="284" y="486" fill="#50fa7b" font-family="Consolas, monospace" font-size="25">"Welcome to the ShopEase Product Service"</text>
   <text x="76" y="530" fill="#8be9fd" font-family="Consolas, monospace" font-size="25">}</text>
-  <text x="48" y="716" fill="#61758a" font-family="Segoe UI, Arial" font-size="16">Formatted view of the live container response. Health does not test SQL connectivity or product CRUD.</text>
+  <text x="48" y="716" fill="#61758a" font-family="Segoe UI, Arial" font-size="16">The live container response is shown above. The smoke script separately exercises product CRUD over HTTP.</text>
 </svg>

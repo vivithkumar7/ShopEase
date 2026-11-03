@@ -31,6 +31,21 @@ def test_health_endpoint(client: TestClient) -> None:
     assert response.json() == {"message": "Welcome to the ShopEase Product Service"}
 
 
+def test_default_product_service_uses_in_memory_repository() -> None:
+    service = ProductService()
+
+    created = service.create_product(
+        name="In-memory item",
+        description=None,
+        price=1,
+        stock_quantity=0,
+        category="Test",
+        status="Active",
+    )
+
+    assert service.get_product(created.id) == created
+
+
 def test_create_product_returns_created_product(
     client: TestClient,
     product_payload: dict[str, object],

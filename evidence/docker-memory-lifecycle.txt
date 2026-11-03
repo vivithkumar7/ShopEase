@@ -1,0 +1,5 @@
+In-memory restart behavior check - 2026-11-03T18:34:41.452267+05:30
+POST created product ID 2: HTTP 201
+Docker Compose restarted the product-service container.
+GET /api/products/2 after restart: HTTP 404
+PASS: process-local in-memory data was cleared when the app restarted.

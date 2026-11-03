@@ -1,27 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
-  <title id="title">ShopEase Docker build and runtime output summary</title>
-  <desc id="desc">Formatted evidence summary: Docker image build completed and the container served root and Swagger endpoints with HTTP 200.</desc>
-  <rect width="1440" height="900" fill="#111827"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="930" viewBox="0 0 1440 930" role="img" aria-labelledby="title desc">
+  <title id="title">ShopEase Docker-hosted CRUD test summary</title>
+  <desc id="desc">Summary of the verified Docker build, running Compose container, and HTTP smoke test covering all product operations.</desc>
+  <rect width="1440" height="930" fill="#111827"/>
   <rect width="1440" height="66" fill="#263449"/>
   <circle cx="30" cy="33" r="8" fill="#ff6b6b"/>
   <circle cx="56" cy="33" r="8" fill="#ffd166"/>
   <circle cx="82" cy="33" r="8" fill="#06d6a0"/>
-  <text x="116" y="41" fill="#e6edf3" font-family="Segoe UI, Arial" font-size="20">PowerShell — Docker verification summary</text>
-  <g font-family="Consolas, monospace" font-size="21">
-    <text x="52" y="122" fill="#72d6a0">PS D:\ShopEase\shopease-product-service&gt; docker build -t shopease-product-service-report .</text>
-    <text x="52" y="164" fill="#a8b7c8">#6 [1/5] FROM python:3.12-slim</text>
-    <text x="52" y="202" fill="#a8b7c8">#7 [2/5] WORKDIR /service · CACHED</text>
-    <text x="52" y="240" fill="#a8b7c8">#8 [3/5] COPY requirements.txt . · CACHED</text>
-    <text x="52" y="278" fill="#a8b7c8">#9 [4/5] RUN pip install -r requirements.txt · CACHED</text>
-    <text x="52" y="316" fill="#a8b7c8">#10 [5/5] COPY app ./app</text>
-    <text x="52" y="365" fill="#72d6a0">#11 DONE · naming to shopease-product-service-report:latest</text>
-    <text x="52" y="427" fill="#72d6a0">PS&gt; docker run -d --name shopease-report-runtime -p 127.0.0.1:18003:8003 shopease-product-service-report</text>
-    <text x="52" y="469" fill="#a8b7c8">Container started · Uvicorn listening on 0.0.0.0:8003</text>
-    <text x="52" y="531" fill="#72d6a0">PS&gt; curl.exe -i http://127.0.0.1:18003/</text>
-    <text x="52" y="573" fill="#8be9fd">HTTP/1.1 200 OK · application/json</text>
-    <text x="52" y="615" fill="#e6edf3">{"message":"Welcome to the ShopEase Product Service"}</text>
-    <text x="52" y="677" fill="#72d6a0">PS&gt; curl.exe http://127.0.0.1:18003/docs</text>
-    <text x="52" y="719" fill="#8be9fd">HTTP 200 OK · Swagger UI available</text>
-    <text x="52" y="791" fill="#a8b7c8">Container smoke check passed; no database host was configured for this check.</text>
+  <text x="116" y="41" fill="#e6edf3" font-family="Segoe UI, Arial" font-size="20">PowerShell — Docker-hosted CRUD verification</text>
+  <g font-family="Consolas, monospace" font-size="19">
+    <text x="52" y="118" fill="#72d6a0">PS D:\ShopEase\shopease-product-service&gt; docker build -t shopease-product-service .</text>
+    <text x="52" y="158" fill="#a8b7c8">#11 DONE · image tagged shopease-product-service:latest</text>
+    <text x="52" y="210" fill="#72d6a0">PS&gt; docker compose up -d --build</text>
+    <text x="52" y="250" fill="#a8b7c8">Container started · 0.0.0.0:8003-&gt;8003/tcp</text>
+    <text x="52" y="302" fill="#72d6a0">PS&gt; python scripts\smoke_test.py --base-url http://localhost:8003</text>
+    <text x="52" y="355" fill="#8be9fd">PASS GET / → HTTP 200</text>
+    <text x="52" y="395" fill="#8be9fd">PASS POST /api/products/ → HTTP 201</text>
+    <text x="52" y="435" fill="#8be9fd">PASS GET /api/products/1 → HTTP 200</text>
+    <text x="52" y="475" fill="#8be9fd">PASS GET /api/products/?category=smoke%20test → HTTP 200</text>
+    <text x="52" y="515" fill="#8be9fd">PASS GET /api/products/?skip=0&amp;limit=1 → HTTP 200</text>
+    <text x="52" y="555" fill="#8be9fd">PASS PUT /api/products/1 → HTTP 200</text>
+    <text x="52" y="595" fill="#8be9fd">PASS DELETE /api/products/1 → HTTP 204</text>
+    <text x="52" y="635" fill="#8be9fd">PASS GET /api/products/1 after delete → HTTP 404</text>
+    <text x="52" y="675" fill="#8be9fd">PASS invalid bodies and IDs → HTTP 422 · unknown ID → HTTP 404</text>
+    <text x="52" y="735" fill="#72d6a0">All product API smoke tests passed against http://localhost:8003</text>
+    <text x="52" y="805" fill="#a8b7c8">Exact per-request test output and Docker logs are saved under evidence/.</text>
+    <text x="52" y="845" fill="#a8b7c8">Storage: process memory · no database integration · data clears on restart.</text>
   </g>
 </svg>

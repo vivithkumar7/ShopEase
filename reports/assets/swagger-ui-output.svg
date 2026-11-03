@@ -35,6 +35,6 @@
     <text x="180" y="671" fill="#203044">/api/products/{product_id}</text>
     <text x="535" y="671" fill="#52677f" font-family="Segoe UI, Arial">Delete a product</text>
   </g>
-  <text x="54" y="766" fill="#52677f" font-family="Segoe UI, Arial" font-size="17">Verified live: GET /docs returned HTTP 200. Try-it-out CRUD requires a configured database.</text>
+  <text x="54" y="766" fill="#52677f" font-family="Segoe UI, Arial" font-size="17">Verified live: GET /docs returned HTTP 200. Try-it-out CRUD uses the running process's in-memory catalog.</text>
   <text x="54" y="811" fill="#718198" font-family="Segoe UI, Arial" font-size="15">Endpoint summary from the running app's OpenAPI schema.</text>
 </svg>

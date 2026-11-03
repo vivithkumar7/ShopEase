@@ -42,6 +42,7 @@ def expect_status(
             f"{method} {path}: expected HTTP {expected_status}, "
             f"received HTTP {actual_status}"
         )
+    print(f"PASS {method} {path} -> HTTP {actual_status}")
 
 
 def run_smoke_tests(base_url: str) -> None:

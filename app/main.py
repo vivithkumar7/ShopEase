@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="A product catalog API backed by Azure SQL Database.",
+    description="An in-memory product catalog API for ShopEase.",
 )
 app.include_router(product_router)
 
