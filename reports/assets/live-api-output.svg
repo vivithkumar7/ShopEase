@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" role="img" aria-labelledby="title desc">
+  <title id="title">ShopEase live API response</title>
+  <desc id="desc">The running Docker-hosted FastAPI service returned HTTP 200 and a JSON welcome message.</desc>
+  <rect width="1440" height="760" fill="#eef3f8"/>
+  <rect width="1440" height="58" fill="#182433"/>
+  <circle cx="30" cy="29" r="8" fill="#ff6b6b"/>
+  <circle cx="56" cy="29" r="8" fill="#ffd166"/>
+  <circle cx="82" cy="29" r="8" fill="#06d6a0"/>
+  <text x="116" y="36" fill="#eaf0f6" font-family="Segoe UI, Arial" font-size="21">ShopEase Product Service — Live API Output</text>
+  <rect x="44" y="94" width="1352" height="92" rx="14" fill="#ffffff" stroke="#d6e0ea" stroke-width="2"/>
+  <text x="74" y="131" fill="#61758a" font-family="Segoe UI, Arial" font-size="18">REQUEST</text>
+  <text x="74" y="163" fill="#182433" font-family="Consolas, monospace" font-size="23">GET  http://127.0.0.1:18003/</text>
+  <rect x="44" y="212" width="1352" height="86" rx="14" fill="#ffffff" stroke="#d6e0ea" stroke-width="2"/>
+  <text x="74" y="249" fill="#61758a" font-family="Segoe UI, Arial" font-size="18">HTTP STATUS</text>
+  <rect x="74" y="263" width="116" height="28" rx="14" fill="#d9f7e9"/>
+  <text x="93" y="284" fill="#087443" font-family="Segoe UI, Arial" font-size="17" font-weight="700">200 OK</text>
+  <rect x="44" y="324" width="1352" height="332" rx="14" fill="#14202d"/>
+  <text x="76" y="370" fill="#9fb4c9" font-family="Segoe UI, Arial" font-size="18">RESPONSE BODY · application/json</text>
+  <text x="76" y="442" fill="#8be9fd" font-family="Consolas, monospace" font-size="25">{</text>
+  <text x="112" y="486" fill="#f1fa8c" font-family="Consolas, monospace" font-size="25">"message"</text>
+  <text x="258" y="486" fill="#e7edf4" font-family="Consolas, monospace" font-size="25">:</text>
+  <text x="284" y="486" fill="#50fa7b" font-family="Consolas, monospace" font-size="25">"Welcome to the ShopEase Product Service"</text>
+  <text x="76" y="530" fill="#8be9fd" font-family="Consolas, monospace" font-size="25">}</text>
+  <text x="48" y="716" fill="#61758a" font-family="Segoe UI, Arial" font-size="16">Formatted view of the live container response. Health does not test SQL connectivity or product CRUD.</text>
+</svg>

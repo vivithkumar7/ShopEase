@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ShopEase Product Service — Project Report</title>
+<style>
+@page { size: A4; margin: 13mm 15mm; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #172b4d; font: 10pt/1.38 "Segoe UI", Arial, sans-serif; background: #e9eef4; }
+.page { position: relative; width: 180mm; height: 271mm; margin: 12mm auto; padding: 8mm 3mm 12mm; background: white; overflow: hidden; break-after: page; page-break-after: always; }
+.page:last-child { break-after: auto; page-break-after: auto; }
+h1,h2,h3,p { margin-top: 0; }
+h1 { margin-bottom: 5mm; font-size: 30pt; line-height: 1.08; letter-spacing: -.5pt; }
+h2 { margin: 0 0 4mm; color: #145da0; font-size: 21pt; }
+h3 { margin: 4mm 0 2mm; color: #174a73; font-size: 12pt; }
+p { margin-bottom: 3mm; }
+ul,ol { margin: 1mm 0 3mm; padding-left: 6mm; }
+li { margin: 1.3mm 0; }
+small,.muted { color: #5e7187; }
+.kicker { margin-bottom: 3mm; color: #137c8b; font-size: 9pt; font-weight: 700; letter-spacing: 1.4pt; text-transform: uppercase; }
+.head { display:flex; justify-content:space-between; border-bottom: 1px solid #d5e0eb; padding-bottom: 2mm; margin-bottom: 6mm; color:#62778d; font-size:8pt; }
+.foot { position:absolute; left:3mm; right:3mm; bottom:4mm; display:flex; justify-content:space-between; border-top:1px solid #d5e0eb; padding-top:2mm; color:#62778d; font-size:8pt; }
+.lead { color: #405b75; font-size: 14pt; line-height: 1.45; }
+.hero { margin-top: 13mm; padding: 12mm; border-radius: 5mm; background: linear-gradient(135deg,#102b4e,#167c92); color:white; }
+.hero .kicker,.hero p { color:#d5eff6; }
+.hero h1 { max-width: 150mm; }
+.badge { display:inline-block; padding: 1.5mm 3mm; margin: 0 1mm 1mm 0; border-radius: 10mm; background:#e9f4fb; color:#145da0; font-size:8pt; font-weight:700; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:4mm; }
+.card { padding:4mm; border:1px solid #d7e2ec; border-radius:3mm; background:#f8fafc; }
+.card strong { color:#145da0; }
+.flow { display:flex; align-items:stretch; gap:2mm; margin:5mm 0; }
+.step { flex:1; padding:3mm 2mm; border:1px solid #c9dbe9; border-radius:2mm; background:#f3f8fc; text-align:center; font-size:8pt; }
+.arrow { align-self:center; color:#21839a; font-size:16pt; }
+table { width:100%; border-collapse:collapse; margin:2mm 0 4mm; font-size:8.5pt; }
+th { background:#173c60; color:white; text-align:left; }
+td,th { border:1px solid #d3deea; padding:2mm; vertical-align:top; }
+tr:nth-child(even) td { background:#f6f9fc; }
+pre { white-space:pre-wrap; margin:2mm 0 3mm; padding:3mm; border-radius:2mm; background:#14202d; color:#eef6ff; font:8pt/1.4 Consolas, monospace; }
+.callout { margin:3mm 0; padding:3mm 4mm; border-left:3px solid #16889c; background:#edf8fa; }
+.warn { border-left-color:#d58a21; background:#fff7e9; }
+.ok { color:#087443; font-weight:700; }
+.diagram { display:flex; flex-direction:column; gap:2mm; margin:4mm auto; max-width:112mm; }
+.diagram div { padding:2.5mm; border-radius:2mm; background:#eaf3fa; border:1px solid #c7dce9; text-align:center; }
+.diagram b { color:#145da0; }
+.diagram .down { background:transparent; border:0; padding:0; color:#13879a; line-height:1; }
+.evidence { width:100%; max-height:107mm; object-fit:contain; border:1px solid #d7e2ec; border-radius:2mm; }
+.evidence.tall { max-height:125mm; }
+.caption { color:#5e7187; font-size:8pt; margin-top:1mm; }
+.cover-line { width:32mm; height:1.5mm; margin:6mm 0; background:#55d4c2; }
+.toc { display:grid; grid-template-columns:1fr 1fr; gap:2mm 8mm; margin-top:4mm; }
+.toc div { padding:2mm 0; border-bottom:1px solid #dce5ed; }
+.code { font:8pt Consolas,monospace; color:#193a5b; }
+@media print {
+  body { background: white; }
+  .page { margin: 0; }
+}
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="hero">
+    <div class="kicker">ShopEase · Backend engineering</div>
+    <h1>Product Service</h1>
+    <div class="cover-line"></div>
+    <p class="lead">Project Report</p>
+    <p>A FastAPI product catalog service with Azure SQL persistence, schema migrations, API validation, and Docker packaging.</p>
+    <p><span class="badge">Python</span><span class="badge">FastAPI</span><span class="badge">Pydantic</span><span class="badge">Azure SQL</span><span class="badge">Docker</span></p>
+  </div>
+  <h3>Report contents</h3>
+  <div class="toc">
+    <div>01 · Project overview</div><div>06 · Database and migrations</div>
+    <div>02 · Technology and structure</div><div>07 · Docker build and run</div>
+    <div>03 · Architecture and request flow</div><div>08 · Live API evidence</div>
+    <div>04 · REST API design</div><div>09 · Testing and verification</div>
+    <div>05 · Validation and errors</div><div>10 · Setup, security, and limitations</div>
+  </div>
+  <div class="callout warn"><b>Verification boundary:</b> the container's health route and Swagger page were exercised live. No SQL server hostname was configured, so database connectivity, migrations, and persistent CRUD are not claimed as live-tested.</div>
+  <div class="foot"><span>ShopEase Product Service</span><span>Page 1 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>01 / OVERVIEW</span></div>
+  <div class="kicker">01 · Project overview</div>
+  <h2>Purpose and scope</h2>
+  <p class="lead">ShopEase Product Service exposes a small, independent HTTP API for managing catalog products.</p>
+  <p>Clients send JSON requests to FastAPI routes. Pydantic validates request data, the route delegates to the product service, and a repository performs data access. The production repository is designed for Azure SQL Database; an in-memory repository is retained for isolated API tests.</p>
+  <div class="grid">
+    <div class="card"><strong>Core capabilities</strong><ul><li>Create a product</li><li>List, category-filter, and paginate</li><li>Read one product by ID</li><li>Replace product fields</li><li>Delete a product</li></ul></div>
+    <div class="card"><strong>Operational goals</strong><ul><li>Typed request and response schemas</li><li>Stable REST status codes</li><li>Containerized Uvicorn service</li><li>Explicit and guarded SQL migrations</li><li>Testable repository/service boundary</li></ul></div>
+  </div>
+  <h3>Product fields</h3>
+  <table><tr><th>Field</th><th>Purpose</th><th>Validation / storage</th></tr>
+  <tr><td>id</td><td>Product identifier</td><td>Database-generated integer</td></tr>
+  <tr><td>name, description</td><td>Display text</td><td>Up to 100 and 1000 characters</td></tr>
+  <tr><td>price</td><td>Unit price</td><td>Positive, 4 decimal places; DECIMAL(19,4)</td></tr>
+  <tr><td>stock_quantity</td><td>Available stock</td><td>Integer ≥ 0</td></tr>
+  <tr><td>category, status</td><td>Catalog grouping and state</td><td>Status: Active or Inactive</td></tr>
+  <tr><td>created_at</td><td>Creation timestamp</td><td>UTC timestamp from database</td></tr></table>
+  <div class="foot"><span>Project scope</span><span>Page 2 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>02 / STACK</span></div>
+  <div class="kicker">02 · Technology and structure</div>
+  <h2>Technology stack</h2>
+  <table><tr><th>Layer</th><th>Technology</th><th>Role</th></tr>
+  <tr><td>Runtime</td><td>Python 3.11+</td><td>Application language</td></tr>
+  <tr><td>HTTP API</td><td>FastAPI + Uvicorn</td><td>Routes, ASGI serving, OpenAPI docs</td></tr>
+  <tr><td>Validation</td><td>Pydantic</td><td>Request parsing and response shaping</td></tr>
+  <tr><td>Persistence</td><td>Azure SQL + mssql-python</td><td>Parameterized SQL access and tables</td></tr>
+  <tr><td>Container</td><td>Docker / Compose</td><td>Repeatable image and runtime</td></tr>
+  <tr><td>Verification</td><td>pytest, Swagger UI, Postman</td><td>Automated and manual API checks</td></tr>
+  <tr><td>Source control</td><td>Git / GitHub</td><td>Versioning and collaboration</td></tr></table>
+  <h3>Code organization</h3>
+  <pre>app/
+  main.py                 FastAPI app and health route
+  config/settings.py      environment-backed settings
+  routers/                HTTP endpoints
+  schemas/                Pydantic validation
+  models/                 product data model
+  services/               application-level operations
+  repositories/           SQL and in-memory data access
+  db/                     connection and migration runner
+tests/                    API and database-safety checks
+Dockerfile / compose.yaml container build and run settings</pre>
+  <div class="callout"><b>Separation of concerns:</b> API routes do not issue SQL directly. Repository implementations are selected below the service layer, which keeps HTTP behavior independently testable.</div>
+  <div class="foot"><span>Stack and modules</span><span>Page 3 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>03 / ARCHITECTURE</span></div>
+  <div class="kicker">03 · Architecture and request flow</div>
+  <h2>Layered request path</h2>
+  <p>Each request passes through a short sequence of typed layers. This lets validation happen before business logic or a database operation is attempted.</p>
+  <div class="diagram">
+    <div><b>Client</b><br>Swagger UI · Postman · web client</div>
+    <div class="down">↓ HTTP / JSON</div>
+    <div><b>Uvicorn</b><br>ASGI server listening on port 8003 in Docker</div>
+    <div class="down">↓ ASGI request</div>
+    <div><b>FastAPI router + Pydantic schema</b><br>Route matching, field validation, HTTP status</div>
+    <div class="down">↓ validated values</div>
+    <div><b>Product service</b><br>Catalog operations</div>
+    <div class="down">↓ repository calls</div>
+    <div><b>SQL repository → [shopease].[products]</b><br>Azure SQL Database</div>
+  </div>
+  <h3>Response path</h3>
+  <p>The repository returns a product model, the response schema shapes it, and FastAPI serializes JSON with the route's declared status code. Unexpected exceptions are logged server-side and return a generic 500 response.</p>
+  <h3>Design benefits</h3>
+  <ul><li>Input validation is consistent and visible in generated OpenAPI docs.</li><li>The service layer provides a stable seam between routes and storage.</li><li>Tests can inject an in-memory service without requiring SQL.</li><li>The SQL repository uses parameterized statements rather than string-built values.</li></ul>
+  <div class="foot"><span>Architecture</span><span>Page 4 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>04 / API</span></div>
+  <div class="kicker">04 · REST API design</div>
+  <h2>Product endpoints</h2>
+  <table><tr><th>Method</th><th>Path</th><th>Behavior</th><th>Success</th></tr>
+  <tr><td>POST</td><td>/api/products/</td><td>Create product</td><td>201</td></tr>
+  <tr><td>GET</td><td>/api/products/</td><td>List / filter / paginate</td><td>200</td></tr>
+  <tr><td>GET</td><td>/api/products/{id}</td><td>Read by ID</td><td>200</td></tr>
+  <tr><td>PUT</td><td>/api/products/{id}</td><td>Replace product fields</td><td>200</td></tr>
+  <tr><td>DELETE</td><td>/api/products/{id}</td><td>Delete by ID</td><td>204</td></tr></table>
+  <h3>Create request example</h3>
+  <pre>{
+  "name": "Headphones",
+  "description": "Wireless headphones",
+  "price": 25.50,
+  "stock_quantity": 20,
+  "category": "Accessories",
+  "status": "Active"
+}</pre>
+  <h3>List and error behavior</h3>
+  <p><span class="code">GET /api/products/?category=Accessories&amp;skip=0&amp;limit=10</span> supports optional case-insensitive category matching and pagination. Unknown product IDs return 404. Invalid path or request data returns 422.</p>
+  <div class="callout">Try endpoints interactively at <span class="code">http://localhost:8003/docs</span> when the service is running. Use the same host and port in Postman.</div>
+  <div class="foot"><span>REST API contract</span><span>Page 5 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>05 / VALIDATION</span></div>
+  <div class="kicker">05 · Validation and errors</div>
+  <h2>Guarding the API boundary</h2>
+  <p>Pydantic schemas reject malformed or out-of-range input before it reaches the product service. Unexpected fields are forbidden so client mistakes are not silently ignored.</p>
+  <table><tr><th>Input</th><th>Rule</th><th>Example rejected</th></tr>
+  <tr><td>name / category</td><td>Trimmed, non-empty, max 100 chars</td><td>Spaces only</td></tr>
+  <tr><td>description</td><td>Optional, max 1000 chars</td><td>Whitespace-only text</td></tr>
+  <tr><td>price</td><td>Strict positive number, max 4 decimals</td><td>0, negative, 0.00001</td></tr>
+  <tr><td>stock_quantity</td><td>Strict integer ≥ 0</td><td>-1 or a decimal</td></tr>
+  <tr><td>status</td><td>Active or Inactive</td><td>Pending</td></tr>
+  <tr><td>product_id</td><td>Integer greater than zero</td><td>0 or non-numeric text</td></tr></table>
+  <h3>HTTP status summary</h3>
+  <div class="grid">
+    <div class="card"><b>200 OK</b><br>Read or update succeeded.</div>
+    <div class="card"><b>201 Created</b><br>Product created.</div>
+    <div class="card"><b>204 No Content</b><br>Delete succeeded.</div>
+    <div class="card"><b>404 Not Found</b><br>Product ID does not exist.</div>
+    <div class="card"><b>422 Unprocessable Entity</b><br>Invalid request, path, or query.</div>
+    <div class="card"><b>500 Internal Server Error</b><br>Unexpected server-side failure.</div>
+  </div>
+  <div class="callout warn"><b>Database boundary:</b> 422 validation can be verified without a database. Successful product CRUD requires a reachable, migrated SQL database; this report does not imply otherwise.</div>
+  <div class="foot"><span>Validation and HTTP behavior</span><span>Page 6 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>06 / DATABASE</span></div>
+  <div class="kicker">06 · Database and migrations</div>
+  <h2>Persistence and schema safety</h2>
+  <p>Product records are designed for Azure SQL Database. Application tables and migration state are isolated in the <span class="code">shopease</span> schema.</p>
+  <table><tr><th>Object</th><th>Purpose</th></tr>
+  <tr><td>[shopease].[products]</td><td>Product data, PK, checks, and category index</td></tr>
+  <tr><td>[shopease].[__schema_migrations]</td><td>Applied migration versions and SHA-256 checksums</td></tr>
+  <tr><td>[shopease].[__migration_lock]</td><td>Application-level migration lock record</td></tr></table>
+  <h3>Migration safeguards</h3>
+  <ol><li>Explicit CLI requires <span class="code">--database</span> to match <span class="code">SQL_DATABASE</span> and refuses <span class="code">master</span>.</li><li>Engine and current database are checked before DDL.</li><li>Migrations run in order under a database application lock and a transaction.</li><li>Previously applied files are checksum-verified; edited, missing, or unknown versions fail.</li><li>Postconditions are checked before recording the migration and again for the latest schema.</li><li>Failures roll back and propagate; app startup does not apply schema changes.</li></ol>
+  <div class="callout warn"><b>Not live-applied:</b> no SQL_HOST was present in the local environment when evidence was captured. A real Azure SQL migration and database CRUD still need to be run against the intended database.</div>
+  <h3>Money precision</h3>
+  <p>API price rules align to <span class="code">DECIMAL(19,4)</span> so values outside the database range or scale are rejected rather than silently rounded.</p>
+  <div class="foot"><span>Azure SQL persistence design</span><span>Page 7 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>07 / DOCKER</span></div>
+  <div class="kicker">07 · Docker build and run</div>
+  <h2>Container output</h2>
+  <p>The Docker image uses Python slim, installs the pinned application requirements, copies the app package, and starts Uvicorn on port 8003.</p>
+  <pre>docker build -t shopease-product-service .
+docker run -d --name shopease-product-container `
+  -p 8003:8003 shopease-product-service
+docker logs shopease-product-container</pre>
+  <img class="evidence" src="assets/docker-output.svg" alt="Docker image build and container smoke test output">
+  <p class="caption">Formatted summary of the verified Docker build and runtime output. Container root and Swagger smoke checks each returned HTTP 200. The SQL database was not contacted by these checks.</p>
+  <h3>Where to test</h3>
+  <ul><li>Health: <span class="code">http://localhost:8003/</span></li><li>Swagger UI: <span class="code">http://localhost:8003/docs</span></li><li>OpenAPI: <span class="code">http://localhost:8003/openapi.json</span></li></ul>
+  <div class="foot"><span>Docker evidence</span><span>Page 8 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>08 / LIVE OUTPUT</span></div>
+  <div class="kicker">08 · Live API evidence</div>
+  <h2>Running service responses</h2>
+  <p>The project image was started as a container and checked over the published local port. These formatted evidence views document the health response and generated API documentation.</p>
+  <img class="evidence" src="assets/live-api-output.svg" alt="Live health response from the container">
+  <p class="caption">Formatted view of the exact JSON response verified from the live container; GET / returned 200.</p>
+  <img class="evidence tall" src="assets/swagger-ui-output.svg" alt="Swagger UI endpoint listing">
+  <p class="caption">GET /docs returned 200 and displayed the API's five product operations.</p>
+  <div class="callout warn"><b>Scope:</b> health and documentation routes do not require a SQL connection. They are not proof that product writes persist or that Azure SQL is configured.</div>
+  <div class="foot"><span>Live output and Swagger</span><span>Page 9 of 10</span></div>
+</section>
+
+<section class="page">
+  <div class="head"><span>SHOP EASE · PROJECT REPORT</span><span>09 / TESTS & NEXT STEPS</span></div>
+  <div class="kicker">09 · Testing and verification</div>
+  <h2>What passed and what remains</h2>
+  <table><tr><th>Check</th><th>Result</th><th>What it proves</th></tr>
+  <tr><td>pytest</td><td>26 passed</td><td>API behavior and migration-safety unit tests</td></tr>
+  <tr><td>pip check</td><td>Passed</td><td>No broken installed requirements</td></tr>
+  <tr><td>Python compileall</td><td>Passed</td><td>Application and test modules compile</td></tr>
+  <tr><td>Docker build</td><td>Passed</td><td>Image assembles with application dependencies</td></tr>
+  <tr><td>Container health</td><td>HTTP 200</td><td>App starts and root route responds</td></tr>
+  <tr><td>Swagger / OpenAPI</td><td>HTTP 200</td><td>Docs and schema endpoints are served</td></tr></table>
+  <h3>Recommended next verification</h3>
+  <ol><li>Set the real SQL_HOST and target SQL_DATABASE in local configuration.</li><li>Run the migration command explicitly against that database.</li><li>Confirm schema and migration-history postconditions.</li><li>Exercise POST → GET → PUT → DELETE through Swagger or Postman.</li><li>Restart the container and verify product data persists.</li></ol>
+  <div class="callout"><b>Test boundary:</b> automated API tests inject an in-memory repository. Migration safety tests use fakes; a real SQL server was not available during this report's verification.</div>
+  <div class="foot"><span>Verification record</span><span>Page 10 of 10</span></div>
+</section>
+</body>
+</html>

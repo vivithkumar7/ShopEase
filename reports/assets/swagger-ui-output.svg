@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">ShopEase Swagger UI routes</title>
+  <desc id="desc">Swagger UI for the running FastAPI service shows product create, list, get, update, and delete endpoints.</desc>
+  <rect width="1440" height="900" fill="#f5f7fa"/>
+  <rect width="1440" height="74" fill="#172b4d"/>
+  <text x="54" y="48" fill="#fff" font-family="Segoe UI, Arial" font-size="29" font-weight="700">ShopEase Product Service</text>
+  <text x="54" y="124" fill="#172b4d" font-family="Segoe UI, Arial" font-size="21">OpenAPI interactive documentation · /docs</text>
+  <text x="54" y="164" fill="#52677f" font-family="Segoe UI, Arial" font-size="17">FastAPI · version 1.0.0 · product catalog endpoints</text>
+  <rect x="48" y="205" width="1344" height="52" rx="8" fill="#e8f4fb" stroke="#76b7d8" stroke-width="2"/>
+  <text x="72" y="239" fill="#174a6e" font-family="Segoe UI, Arial" font-size="20" font-weight="700">products</text>
+  <g font-family="Consolas, monospace" font-size="18">
+    <rect x="48" y="277" width="1344" height="74" rx="8" fill="#e7f6ec" stroke="#59a96a"/>
+    <rect x="64" y="294" width="88" height="38" rx="5" fill="#2f855a"/>
+    <text x="84" y="320" fill="white" font-weight="700">POST</text>
+    <text x="180" y="319" fill="#203044">/api/products/</text>
+    <text x="535" y="319" fill="#52677f" font-family="Segoe UI, Arial">Create a product</text>
+    <rect x="48" y="365" width="1344" height="74" rx="8" fill="#e7f0ff" stroke="#6b8fc9"/>
+    <rect x="64" y="382" width="88" height="38" rx="5" fill="#3972b8"/>
+    <text x="84" y="408" fill="white" font-weight="700">GET</text>
+    <text x="180" y="407" fill="#203044">/api/products/</text>
+    <text x="535" y="407" fill="#52677f" font-family="Segoe UI, Arial">List / filter / paginate</text>
+    <rect x="48" y="453" width="1344" height="74" rx="8" fill="#e7f0ff" stroke="#6b8fc9"/>
+    <rect x="64" y="470" width="88" height="38" rx="5" fill="#3972b8"/>
+    <text x="84" y="496" fill="white" font-weight="700">GET</text>
+    <text x="180" y="495" fill="#203044">/api/products/{product_id}</text>
+    <text x="535" y="495" fill="#52677f" font-family="Segoe UI, Arial">Get one product</text>
+    <rect x="48" y="541" width="1344" height="74" rx="8" fill="#fff3df" stroke="#d1a153"/>
+    <rect x="64" y="558" width="88" height="38" rx="5" fill="#bd7a13"/>
+    <text x="75" y="584" fill="white" font-weight="700">PUT</text>
+    <text x="180" y="583" fill="#203044">/api/products/{product_id}</text>
+    <text x="535" y="583" fill="#52677f" font-family="Segoe UI, Arial">Replace product fields</text>
+    <rect x="48" y="629" width="1344" height="74" rx="8" fill="#ffe9e8" stroke="#d47a79"/>
+    <rect x="64" y="646" width="88" height="38" rx="5" fill="#c34444"/>
+    <text x="70" y="672" fill="white" font-weight="700">DELETE</text>
+    <text x="180" y="671" fill="#203044">/api/products/{product_id}</text>
+    <text x="535" y="671" fill="#52677f" font-family="Segoe UI, Arial">Delete a product</text>
+  </g>
+  <text x="54" y="766" fill="#52677f" font-family="Segoe UI, Arial" font-size="17">Verified live: GET /docs returned HTTP 200. Try-it-out CRUD requires a configured database.</text>
+  <text x="54" y="811" fill="#718198" font-family="Segoe UI, Arial" font-size="15">Endpoint summary from the running app's OpenAPI schema.</text>
+</svg>
